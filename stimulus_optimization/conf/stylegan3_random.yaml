@@ -1,0 +1,57 @@
+generator: StyleGAN3
+generator_path: null
+generator_resolution: 128
+generator_alignment: True
+n_gpus_for_rendering: 1
+load_latents: False
+latent_path: null
+coefs:
+  - w
+coef_init_method: random
+
+# model evaluation
+load_representational_models: False
+
+# objective evaluation
+loss: null # options: ["expected_difference","raw_corr", "latent_variation","multilayer", "multilayer_pairwise_dissimilarities"]
+#
+# optimization settings
+random_seed: null
+nFaces: 144 # N faces yield n//2 face pairs
+max_iters: -1 # total optimization steps
+
+#
+# optimization constraints
+bound_latents: False # turn constraints on or off
+truncation_cutoff: null
+truncation_psi: 0.7
+noise_mode: const
+constraint_type: null
+pairs_per_correlation: 6
+
+#
+# rendering and post-rendering image processing (affects model responses)
+optimization_imsize: 128 # image size used during optimization. 512 for Pilot 1.
+optimization_crop_size: 128 # image size used during optimization. 224 for Pilot 1.
+grayscale: False
+fix_intensity_stats: False
+enable_jitter: False
+max_jitter: 15
+gaussian_noise_sigma: null
+
+#
+# file output
+saving_imsize: 128
+saving_crop_size: 128
+export_folder: randomly_sampled
+save_optimization_log: False # whether to write a tensorboard log
+file_naming_scheme: pairwise_trial
+
+#
+verbose: 2
+# Hydra conf
+hydra:
+  run:
+    dir: ${export_folder}/seed_${random_seed}_${now:%Y-%m-%d}_${now:%H-%M-%S}
+  sweep:
+    dir: ${export_folder}/seed_${random_seed}_${now:%Y-%m-%d}_${now:%H-%M-%S}

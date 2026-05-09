@@ -1,0 +1,98 @@
+generator: StyleGAN3
+generator_path: null
+generator_resolution: 128
+generator_alignment: True
+n_gpus_for_rendering: 4
+load_latents: False
+coefs:
+  - w
+coef_init_method: random # choices=["average", "random"]
+
+nonface_loss: True
+face_detector_weight_path: "model_checkpoints/yolov5n-face.pt"
+face_detector_smooth_alpha: 20
+face_detector_device: "cpu" # device used for face_detector
+classifier_path: "model_checkpoints/face_nonface_classifier.npz"
+nonface_loss_agg_func: "max"
+
+# model evaluation
+load_representational_models: True
+instance_id:
+  - 0
+  - 1
+comparison_factor: null
+layer_selector: conv,fc # used to extract layers for multilayer targeting
+#
+# objective evaluation
+loss: multiinstance_pairwise_dissimilarities # options: ["multiinstance_multilayer", "multilayer_pairwise_dissimilarities"]
+utility_definition: single_reference_utility
+accuracy_definition: single_reference_accuracy
+reference_realization_id: 0 # if single_reference_utility is used, which instance_id is used as reference
+test_realization_id: 2 # test optimized stimuli on heldout instance
+models_agg_fun: max # how we aggregate utility across alternative (wrong) reference models [mean/max/smoothmax]
+models_agg_fun_alpha : null # alpha parameter for smoothmax (0 = mean, inf-> max)
+layers_agg_fun: max # how we aggreagte utility across layers of a reference model [mean/max/smoothmax]
+layers_agg_fun_alpha: null # alpha parameter for smoothmax (0 = mean, inf-> max)
+exp_diminishing_returns: 10.0
+pairs_per_correlation: 6
+early_stopping: True
+
+#
+# optimization settings
+random_seed: null
+nFaces: 144 # N faces yield n//2 face pairs
+enable_expressions: False
+max_iters: 1000 # total optimization steps
+accumulation_steps: 1 # gradient accumulation steps within each optimization step
+max_scheduler_steps: 3 # how many times should we step down LR upon convergence
+## optimizer settings
+learning_rate: 0.08
+optimizer: Adam
+beta1: 0.9
+beta2: 0.999
+## convergence check
+conv_check_param: loss
+window_length: 50 # how many iterations to average over for convergence
+## learning rate scheduler
+lr_adaptive: True
+lr_schedule: StepLR
+
+amp: True  # use 16 bit floats for some operations.
+normalize_first_level_rdm: True
+rsa_dist_fun: pearson_correlation # choices=["pearson_correlation, "cosine_similarity"]
+fisher_transform: False # whether to Fisher transform the correlations before combining them
+dissimilarity_gradient_checkpoint: True # turn this on to save GPU memory (slows down optimization)
+#
+# optimization constraints
+bound_latents: True # turn constraints on or off
+truncation_cutoff: null
+truncation_psi: 0.7
+noise_mode: const
+constraint_type: null
+#
+# rendering and post-rendering image processing (affects model responses)
+optimization_imsize: 128 # image size used during optimization. 512 for Pilot 1.
+optimization_crop_size: 128 # image size used during optimization. 224 for Pilot 1.
+grayscale: False
+fix_intensity_stats: False
+enable_jitter: True
+disable_reference_im_jitter: True
+max_jitter: 8
+gaussian_noise_sigma: null
+
+#
+# file output
+saving_imsize: 128
+saving_crop_size: 128
+export_folder: multilayer_exp
+save_optimization_log: True # whether to write a tensorboard log
+file_naming_scheme: pairwise_trial
+
+#
+verbose: 2
+# Hydra conf
+hydra:
+  run:
+    dir: ${export_folder}/seed_${random_seed}_${now:%Y-%m-%d}_${now:%H-%M-%S}
+  sweep:
+    dir: ${export_folder}/seed_${random_seed}_${now:%Y-%m-%d}_${now:%H-%M-%S}

@@ -1,0 +1,72 @@
+generator: BFM
+generator_path: model_checkpoints/model2019_fullHead.h5
+n_gpus_for_rendering: 1
+load_latents: True
+random_seed: 1
+latent_path: bfm-pose_init/seed_${random_seed}.npz
+export_folder: multilayer_exp
+binsize: 0
+nonface_loss: false
+
+# model evaluation
+load_representational_models: False
+
+#
+coefs: # shape_coefs/text_coefs/expr_coefs
+  - shape_coefs
+  - tex_coefs
+nFaces: 144 # N faces yield n//2 face pairs
+enable_expressions: False
+
+# objective evaluation
+loss: null # options: ["expected_difference","raw_corr", "latent_variation","multilayer", "multilayer_pairwise_dissimilarities"]
+#
+# optimization settings
+max_iters: -1 # total optimization steps
+
+#
+# optimization constraints
+bound_latents: False # turn constraints on or off
+optimize_coordinate_space: False
+shape_coefs_ball_radius: null 
+tex_coefs_ball_radius: null
+expr_coefs_ball_radius: null 
+shape_coefs_box_SDs: null
+tex_coefs_box_SDs: null
+expr_coefs_box_SDs: null
+optimize_only_n_shape_coefs: null 
+optimize_only_n_tex_coefs: null
+optimize_only_n_expr_coefs: null
+constraint_relative_to_individual_faces: False
+pairs_per_correlation: 6
+
+#
+# rendering and post-rendering image processing (affects model responses)
+optimization_imsize: 128 # image size used during optimization. 512 for Pilot 1.
+optimization_crop_size: 128 # image size used during optimization. 224 for Pilot 1.
+cropping_extend: 0.2
+cropping_overflow_method: expand 
+cropping_tightness: loose 
+grayscale: False
+fix_intensity_stats: False
+enable_jitter: True
+max_jitter: 10
+max_scale_jitter: 0.05
+gaussian_noise_sigma: 0
+
+#
+# file output
+saving_imsize: 471
+saving_crop_size: 471
+bg_intensity: 1.0
+save_optimization_log: False # whether to write a tensorboard log
+file_naming_scheme: pairwise_trial
+
+#
+verbose: 2
+# Hydra conf
+hydra:
+  run:
+    dir: ${export_folder}/seed_${random_seed}_${now:%Y-%m-%d}_${now:%H-%M-%S}
+  sweep:
+    dir: ${export_folder}/seed_${random_seed}_${now:%Y-%m-%d}_${now:%H-%M-%S}

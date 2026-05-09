@@ -1,0 +1,104 @@
+generator: BFM
+generator_path: model_checkpoints/model2019_fullHead.h5
+n_gpus_for_rendering: 3
+load_latents: True
+random_seed: 1
+latent_path: bfm-pose_init/seed_${random_seed}.npz
+binsize: 0
+nonface_loss: false
+
+# model evaluation
+load_representational_models: True
+instance_id:
+  - 0
+  - 1
+comparison_factor: null
+layer_selector: conv,fc # used to extract layers for multilayer targeting
+#
+# objective evaluation
+loss: multiinstance_pairwise_dissimilarities
+utility_definition: single_reference_utility
+accuracy_definition: single_reference_accuracy
+reference_realization_id: 0 # if single_reference_utility is used, which instance_id is used as reference
+test_realization_id: 2
+models_agg_fun: max # how we aggregate utility across alternative (wrong) reference models [mean/max/smoothmax]
+models_agg_fun_alpha : null # alpha parameter for smoothmax (0 = mean, inf-> max)
+layers_agg_fun: max # how we aggreagte utility across layers of a reference model [mean/max/smoothmax]
+layers_agg_fun_alpha: null # alpha parameter for smoothmax (0 = mean, inf-> max)
+exp_diminishing_returns: 10.0
+pairs_per_correlation: 6
+early_stopping: True
+
+#
+# optimization settings
+coefs: # shape_coefs/text_coefs/expr_coefs
+  - shape_coefs
+  - tex_coefs
+nFaces: 144 # N faces yield n//2 face pairs
+enable_expressions: False
+max_iters: 1000 # total optimization steps
+accumulation_steps: 1 # gradient accumulation steps within each optimization step
+max_scheduler_steps: 3 # how many times should we step down LR upon convergence
+## optimizer settings
+learning_rate: 0.1
+optimizer: Adam
+beta1: 0.92
+beta2: 0.999
+## convergence check
+conv_check_param: loss
+window_length: 50 # how many iterations to average over for convergence
+## learning rate scheduler
+lr_adaptive: True
+lr_schedule: StepLR
+
+amp: True  # use 16 bit floats for some operations.
+normalize_first_level_rdm: True
+rsa_dist_fun: pearson_correlation # choices=["pearson_correlation, "cosine_similarity"]
+fisher_transform: False # whether to Fisher transform the correlations before combining them
+dissimilarity_gradient_checkpoint: True # turn this on to save GPU memory (slows down optimization)
+#
+# optimization constraints
+bound_latents: True # turn constraints on or off
+optimize_coordinate_space: False
+shape_coefs_ball_radius: null 
+tex_coefs_ball_radius: null
+expr_coefs_ball_radius: null 
+shape_coefs_box_SDs: 2.0
+tex_coefs_box_SDs: 2.0
+expr_coefs_box_SDs: null
+optimize_only_n_shape_coefs: null 
+optimize_only_n_tex_coefs: null
+optimize_only_n_expr_coefs: null
+constraint_relative_to_individual_faces: False
+#
+# rendering and post-rendering image processing (affects model responses)
+optimization_imsize: 128 # image size used during optimization. 512 for Pilot 1.
+optimization_crop_size: 128 # image size used during optimization. 224 for Pilot 1.
+cropping_extend: 0.2
+cropping_overflow_method: expand 
+cropping_tightness: loose 
+grayscale: False
+fix_intensity_stats: False
+enable_jitter: True
+disable_reference_im_jitter: True
+max_jitter: 5
+max_scale_jitter: 0
+gaussian_noise_sigma: null
+
+#
+# file output
+saving_imsize: 471
+saving_crop_size: 471
+bg_intensity: 1.0
+export_folder: multilayer_exp
+save_optimization_log: True # whether to write a tensorboard log
+file_naming_scheme: pairwise_trial
+
+#
+verbose: 2
+# Hydra conf
+hydra:
+  run:
+    dir: ${export_folder}/seed_${random_seed}_${now:%Y-%m-%d}_${now:%H-%M-%S}
+  sweep:
+    dir: ${export_folder}/seed_${random_seed}_${now:%Y-%m-%d}_${now:%H-%M-%S}
