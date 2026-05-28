@@ -34,7 +34,7 @@ The original runs were executed with Conda + CUDA modules. You can install the e
 conda env create -f environment.yml
 ```
 
-You may need to adapt this setup for your local machine or HPC cluster.  
+Typical install time is 5--10 minutes on a desktop computer. You may need to adapt this setup for your local machine or HPC cluster.
 `environment-axon-full.yml` contains the exact build strings from our GPU cluster installation.
 
 ```bash
@@ -244,3 +244,7 @@ python vis/plot_model_performance_pooled.py
 - Keep folder names/paths consistent with script defaults (`exp_data`, `model_checkpoints`).
 - Run behavioral preprocessing before model-performance evaluation.
 - For large runs, log stdout/stderr and keep per-seed export folders.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
